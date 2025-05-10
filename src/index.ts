@@ -5,7 +5,7 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 // Import routes
 import cryptocurrenciesRoutes from './services/cryptocurrencies/route/cryptocurrenciesRoutes.js';
-// import dashboardRoutes from './services/dashboard-general/route/dashboardRoutes.js';
+import dashboardRoutes from './services/dashboard-general/route/dashboardRoutes.js';
 
 // Initialize Express app
 const app: Express = express();
@@ -22,7 +22,7 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/cryptocurrencies', cryptocurrenciesRoutes);
-// app.use('/api', dashboardRoutes);
+app.use('/api', dashboardRoutes);
 
 // Error handling middleware
 app.use(notFoundHandler);

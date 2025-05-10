@@ -56,9 +56,11 @@ export interface PercentChange {
     limit?: number;
     filter?: string;
     sortBy?: string;
-    sortPeriod?: '5m' | '1h' | '6h' | '24h';
+    sortPeriod?: '5m' | '1h' | '6h' | '24h' | '7d' | '30d';
     sortDirection?: 'asc' | 'desc';
     search?: string;
+    period?: string;
+
   }
   
   export interface CMCListingResponse {

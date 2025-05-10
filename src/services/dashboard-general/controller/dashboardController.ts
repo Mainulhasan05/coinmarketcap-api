@@ -1,10 +1,22 @@
 import { Request, Response, NextFunction } from 'express';
-import { FilterOptions, CryptoCurrency } from '../../../types/index.js';
+import { FilterOptions, CryptoCurrency, PaginatedApiResponse } from '../../../types/index.js';
 import { getCryptoData } from '../../cryptocurrencies/controller/cryptocurrenciesController.js';
 import { ApiError } from '../../../middleware/errorHandler.js';
 
+// Define all supported time periods
+type TimePeriod = '5m' | '1h' | '6h' | '24h' | '7d' | '30d';
+
+// Valid time periods for validation
+const VALID_TIME_PERIODS: TimePeriod[] = ['5m', '1h', '6h', '24h', '7d', '30d'];
+
+// Valid filter options for validation
+const VALID_FILTERS = ['trending', 'gainers', ...VALID_TIME_PERIODS];
+
+// Valid sort fields for validation
+const VALID_SORT_FIELDS = ['market_cap', 'price', 'volume_24h', 'percent_change'];
+
 /**
- * Get trending cryptocurrencies (sorted by 24h percent change)
+ * Get trending cryptocurrencies with customizable time period
  */
 export const getTrending = async (
   req: Request,
@@ -12,29 +24,51 @@ export const getTrending = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const data = await getCryptoData();
+    const page = req.query.page ? parseInt(req.query.page as string) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const period = (req.query.period as TimePeriod) || '24h'; // Default to 24h
     
-    // Sort by 24h percent change in descending order
-    const sortedData = [...data].sort(
-      (a, b) => b.raw_percent_change['24h'] - a.raw_percent_change['24h']
-    );
+    // Validate time period
+    if (!VALID_TIME_PERIODS.includes(period as TimePeriod)) {
+      throw ApiError.badRequest(`Invalid time period. Use one of: ${VALID_TIME_PERIODS.join(', ')}`);
+    }
+    
+    // Get data directly from API with all parameters
+    const result = await getCryptoData({ 
+      page, 
+      limit,
+      period,
+      filter: 'trending',
+      sortBy: 'percent_change',
+      sortDirection: 'desc'
+    });
 
-    res.json({
+    // Create paginated response
+    const paginatedResponse: PaginatedApiResponse<CryptoCurrency> = {
       status: {
         timestamp: new Date(),
         error_code: 0,
         error_message: null,
       },
+      data: result.data,
+      pagination: result.pagination,
       filter: 'trending',
-      data: sortedData,
-    });
+      sort: {
+        by: 'percent_change',
+        period: period,
+        direction: 'desc',
+      },
+      search: null,
+    };
+
+    res.json(paginatedResponse);
   } catch (error) {
     next(error);
   }
 };
 
 /**
- * Get gainers (cryptocurrencies with positive 24h percent change)
+ * Get gainers (cryptocurrencies with positive percent change) with customizable time period
  */
 export const getGainers = async (
   req: Request,
@@ -42,22 +76,44 @@ export const getGainers = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const data = await getCryptoData();
+    const page = req.query.page ? parseInt(req.query.page as string) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const period = (req.query.period as TimePeriod) || '24h'; // Default to 24h
     
-    // Filter by positive 24h percent change and sort in descending order
-    const sortedData = [...data]
-      .filter((crypto) => crypto.raw_percent_change['24h'] > 0)
-      .sort((a, b) => b.raw_percent_change['24h'] - a.raw_percent_change['24h']);
+    // Validate time period
+    if (!VALID_TIME_PERIODS.includes(period as TimePeriod)) {
+      throw ApiError.badRequest(`Invalid time period. Use one of: ${VALID_TIME_PERIODS.join(', ')}`);
+    }
+    
+    // Get data directly from API with all parameters
+    const result = await getCryptoData({ 
+      page, 
+      limit,
+      period,
+      filter: 'gainers',
+      sortBy: 'percent_change',
+      sortDirection: 'desc'
+    });
 
-    res.json({
+    // Create paginated response
+    const paginatedResponse: PaginatedApiResponse<CryptoCurrency> = {
       status: {
         timestamp: new Date(),
         error_code: 0,
         error_message: null,
       },
+      data: result.data,
+      pagination: result.pagination,
       filter: 'gainers',
-      data: sortedData,
-    });
+      sort: {
+        by: 'percent_change',
+        period: period,
+        direction: 'desc',
+      },
+      search: null,
+    };
+
+    res.json(paginatedResponse);
   } catch (error) {
     next(error);
   }
@@ -72,133 +128,51 @@ export const getByTimePeriod = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const period = req.params.period;
+    const period = req.params.period as TimePeriod;
+    const page = req.query.page ? parseInt(req.query.page as string) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
     
     // Validate time period
-    if (!['5m', '1h', '6h', '24h'].includes(period)) {
-      throw ApiError.badRequest('Invalid time period. Use 5m, 1h, 6h, or 24h.');
+    if (!VALID_TIME_PERIODS.includes(period)) {
+      throw ApiError.badRequest(`Invalid time period. Use one of: ${VALID_TIME_PERIODS.join(', ')}`);
     }
     
-    const data = await getCryptoData();
-    
-    // Sort by the specified time period in descending order
-    const sortedData = [...data].sort(
-      (a, b) => b.raw_percent_change[period as keyof typeof b.raw_percent_change] - 
-                a.raw_percent_change[period as keyof typeof a.raw_percent_change]
-    );
+    // Get data directly from API with all parameters
+    const result = await getCryptoData({ 
+      page, 
+      limit,
+      period,
+      filter: period,
+      sortBy: 'percent_change',
+      sortDirection: 'desc'
+    });
 
-    res.json({
+    // Create paginated response
+    const paginatedResponse: PaginatedApiResponse<CryptoCurrency> = {
       status: {
         timestamp: new Date(),
         error_code: 0,
         error_message: null,
       },
+      data: result.data,
+      pagination: result.pagination,
       filter: period,
-      data: sortedData,
-    });
+      sort: {
+        by: 'percent_change',
+        period: period,
+        direction: 'desc',
+      },
+      search: null,
+    };
+
+    res.json(paginatedResponse);
   } catch (error) {
     next(error);
   }
 };
 
 /**
- * Apply filters to cryptocurrency data
- * @param data Cryptocurrency data
- * @param options Filter options
- * @returns Filtered cryptocurrency data
- */
-const applyFilters = (data: CryptoCurrency[], options: FilterOptions): CryptoCurrency[] => {
-  let filteredData = [...data];
-  const {
-    filter,
-    sortBy = 'market_cap',
-    sortPeriod = '24h',
-    sortDirection = 'desc',
-    search,
-  } = options;
-
-  // Apply search filter if provided
-  if (search) {
-    const searchLower = search.toLowerCase();
-    filteredData = filteredData.filter(
-      (crypto) =>
-        crypto.name.toLowerCase().includes(searchLower) ||
-        crypto.symbol.toLowerCase().includes(searchLower)
-    );
-  }
-
-  // Apply specific filters
-  if (filter) {
-    switch (filter) {
-      case 'trending':
-        filteredData.sort(
-          (a, b) => b.raw_percent_change['24h'] - a.raw_percent_change['24h']
-        );
-        break;
-      case 'gainers':
-        filteredData = filteredData
-          .filter((crypto) => crypto.raw_percent_change['24h'] > 0)
-          .sort(
-            (a, b) => b.raw_percent_change['24h'] - a.raw_percent_change['24h']
-          );
-        break;
-      case '5m':
-      case '1h':
-      case '6h':
-      case '24h':
-        // Sort by the specified time period
-        filteredData.sort((a, b) =>
-          sortDirection === 'asc'
-            ? a.raw_percent_change[filter] - b.raw_percent_change[filter]
-            : b.raw_percent_change[filter] - a.raw_percent_change[filter]
-        );
-        break;
-    }
-  } else {
-    // Apply sorting if no specific filter is selected
-    switch (sortBy) {
-      case 'price':
-        filteredData.sort((a, b) =>
-          sortDirection === 'asc' ? a.price - b.price : b.price - a.price
-        );
-        break;
-      case 'market_cap':
-        filteredData.sort((a, b) =>
-          sortDirection === 'asc'
-            ? a.market_cap - b.market_cap
-            : b.market_cap - a.market_cap
-        );
-        break;
-      case 'volume_24h':
-        filteredData.sort((a, b) =>
-          sortDirection === 'asc'
-            ? a.volume_24h - b.volume_24h
-            : b.volume_24h - a.volume_24h
-        );
-        break;
-      case 'percent_change':
-        // Use the specified sort period
-        if (['5m', '1h', '6h', '24h'].includes(sortPeriod)) {
-          filteredData.sort((a, b) =>
-            sortDirection === 'asc'
-              ? a.raw_percent_change[sortPeriod as keyof typeof a.raw_percent_change] -
-                b.raw_percent_change[sortPeriod as keyof typeof b.raw_percent_change]
-              : b.raw_percent_change[sortPeriod as keyof typeof b.raw_percent_change] -
-                a.raw_percent_change[sortPeriod as keyof typeof a.raw_percent_change]
-          );
-        }
-        break;
-      default:
-        // Default sort by market cap
-        filteredData.sort((a, b) => b.market_cap - a.market_cap);
-    }
-  }
-
-  return filteredData;
-};
-
-/**
- * Master API endpoint with pagination, filtering and sorting
+ * Master API endpoint with advanced filtering, sorting, and pagination
  */
 export const getMasterData = async (
   req: Request,
@@ -206,57 +180,48 @@ export const getMasterData = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Get raw data first
-    const allData = await getCryptoData();
-
     // Extract query parameters
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const filter = req.query.filter as string | undefined;
     const sortBy = req.query.sortBy as string || 'market_cap';
-    const sortPeriod = req.query.sortPeriod as '5m' | '1h' | '6h' | '24h' || '24h';
+    const sortPeriod = req.query.sortPeriod as TimePeriod || '24h';
     const sortDirection = (req.query.sortDirection as string)?.toLowerCase() === 'asc' ? 'asc' : 'desc';
     const search = (req.query.search as string)?.toLowerCase() || '';
-
-    // Apply filters and sorting
-    const filteredData = applyFilters(allData, {
+    
+    // Validate parameters
+    if (sortPeriod && !VALID_TIME_PERIODS.includes(sortPeriod)) {
+      throw ApiError.badRequest(`Invalid sort period. Use one of: ${VALID_TIME_PERIODS.join(', ')}`);
+    }
+    
+    if (filter && !VALID_FILTERS.includes(filter)) {
+      throw ApiError.badRequest(`Invalid filter. Use one of: ${VALID_FILTERS.join(', ')}`);
+    }
+    
+    if (sortBy && !VALID_SORT_FIELDS.includes(sortBy)) {
+      throw ApiError.badRequest(`Invalid sort field. Use one of: ${VALID_SORT_FIELDS.join(', ')}`);
+    }
+    
+    // Pass all parameters directly to the API
+    const result = await getCryptoData({ 
+      page,
+      limit,
+      period: sortPeriod,
       filter,
       sortBy,
-      sortPeriod,
       sortDirection,
-      search,
+      search
     });
 
-    // Calculate pagination
-    const totalItems = filteredData.length;
-    const totalPages = Math.ceil(totalItems / limit);
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedData = filteredData.slice(startIndex, endIndex);
-
-    // Add indices for pagination
-    paginatedData.forEach((item, index) => {
-      item.index = startIndex + index + 1;
-    });
-
-    // Prepare pagination metadata
-    const pagination = {
-      total_items: totalItems,
-      total_pages: totalPages,
-      current_page: page,
-      page_size: limit,
-      has_next_page: page < totalPages,
-      has_previous_page: page > 1,
-    };
-
-    // Send response
-    res.json({
+    // Create paginated response
+    const paginatedResponse: PaginatedApiResponse<CryptoCurrency> = {
       status: {
         timestamp: new Date(),
         error_code: 0,
         error_message: null,
       },
-      pagination,
+      data: result.data,
+      pagination: result.pagination,
       filter: filter || null,
       sort: {
         by: sortBy,
@@ -264,8 +229,9 @@ export const getMasterData = async (
         direction: sortDirection,
       },
       search: search || null,
-      data: paginatedData,
-    });
+    };
+
+    res.json(paginatedResponse);
   } catch (error) {
     next(error);
   }
