@@ -70,6 +70,7 @@ export interface PercentChange {
       elapsed: number;
       credit_count: number;
       notice: string | null;
+      total_count: number;
     };
   }
   
