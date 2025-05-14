@@ -120,7 +120,7 @@ export const getMasterData = async (req: Request, res: Response): Promise<void> 
   try {
     const queryParams: MasterQueryParams = {
       page: req.query.page ? parseInt(req.query.page as string) : 1,
-      limit: req.query.limit ? parseInt(req.query.limit as string) : 10,
+      limit: req.query.limit ? parseInt(req.query.limit as string) : 100,
       filter: req.query.filter as 'all' | 'gainers' | 'losers' | 'trending' || 'all',
       sortBy: req.query.sortBy as 'market_cap' | 'price' | 'volume_24h' | 'percent_change' || 'market_cap',
       sortPeriod: req.query.sortPeriod as '1h' | '24h' | '7d' | '30d' || '24h',

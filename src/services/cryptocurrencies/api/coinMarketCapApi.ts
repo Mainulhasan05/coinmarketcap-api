@@ -42,7 +42,7 @@ export const getTrendingCryptocurrencies = async (
   try {
     // Set default values if not provided
     const apiParams = {
-      limit: params.limit || 10,
+      limit: params.limit || 100,
       convert: params.convert || 'USD',
       time_period: params.time_period || '24h',
       ...params
@@ -68,7 +68,7 @@ export const getGainersLosers = async (
   try {
     // Set default values if not provided
     const apiParams = {
-      limit: params.limit || 10,
+      limit: params.limit || 100,
       convert: params.convert || 'USD',
       time_period: params.time_period || '24h',
       ...params

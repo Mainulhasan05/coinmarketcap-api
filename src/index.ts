@@ -1,4 +1,4 @@
-// index.ts
+// src/index.ts
 import express, { Express } from 'express';
 import cors from 'cors';
 import envConfig from './config/envConfig.js';
