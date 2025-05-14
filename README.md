@@ -1,127 +1,133 @@
-# Cryptocurrency Dashboard API
+# Cryptocurrency API with Express.js and TypeScript
 
-This project is a backend API that consumes data from the CoinMarketCap API and exposes RESTful endpoints for a cryptocurrency dashboard frontend.
+This project implements a cryptocurrency data API using Express.js and TypeScript, integrated with the CoinMarketCap API.
 
-## Project Architecture
-
-The project follows a modular structure with clear separation between routes, controllers, and services:
-
-```
-/server
-├── src/
-│   ├── index.ts                  # Main application entry point
-│   ├── types/                    # Type definitions
-│   ├── config/                   # Configuration files
-│   ├── middleware/               # Express middleware
-│   ├── utils/                    # Utility functions
-│   └── services/                 # Services organized by domain
-│       ├── cryptocurrencies/     # Cryptocurrency data service
-│       │   ├── route/            # Routes for cryptocurrency data
-│       │   └── controller/       # Controllers for cryptocurrency data
-│       └── dashboard-general/    # Dashboard service
-│           ├── route/            # Routes for dashboard
-│           └── controller/       # Controllers for dashboard
-```
-
-## Technologies Used
-
-- Node.js (20.16.0)
-- TypeScript
-- Express.js
-- Axios for HTTP requests
-
-## Prerequisites
-
-- Node.js (20.16.0)
-- npm (>=10.8.1)
-- CoinMarketCap API key
-
-## Installation
+## Setup
 
 1. Clone the repository
 2. Install dependencies:
    ```bash
    npm install
    ```
-3. Create a `.env` file in the root directory based on `.env.example`:
+3. Create a `.env` file in the root directory with the following content:
+
    ```
    PORT=3000
-   CMC_API_KEY=your_coinmarketcap_api_key_here
+   NODE_ENV=development
+   COINMARKETCAP_API_KEY=your_api_key_here
    ```
 
-## Running the Application
+   Replace `your_api_key_here` with your actual CoinMarketCap API key.
 
-### Development Mode
+4. Build the TypeScript code:
+   ```bash
+   npm run build
+   ```
+5. Start the server:
+   ```bash
+   npm start
+   ```
 
-```bash
-npm run dev
+## Available Endpoints
+
+### Get all cryptocurrency data
+
+```
+GET /api/cryptocurrencies
 ```
 
-### Production Mode
+Query parameters:
 
-```bash
-npm run build
-npm start
+- `start` (default: 1): Starting position
+- `limit` (default: 100): Number of results to return
+- `sort` (default: market_cap): Sort by field
+- `sort_dir` (default: desc): Sort direction, 'asc' or 'desc'
+- `convert` (default: USD): Currency to convert to
+- `price_min`, `price_max`: Filter by price range
+- `market_cap_min`, `market_cap_max`: Filter by market cap range
+- `volume_24h_min`, `volume_24h_max`: Filter by 24h volume range
+- `percent_change_24h_min`, `percent_change_24h_max`: Filter by 24h percent change range
+- `cryptocurrency_type`: Filter by cryptocurrency type
+- `tag`: Filter by tag
+
+### Get trending cryptocurrencies
+
+```
+GET /api/cryptocurrencies/trending
 ```
 
-## API Endpoints
+### Get gainers and losers
 
-### Health Check
+```
+GET /api/cryptocurrencies/gainers
+```
 
-- **GET** `/health`
-  - Returns the status of the API
+Query parameters:
 
-### Cryptocurrency Data
+- `time_period` (default: 24h): Time period for calculating gains/losses
+- `limit` (default: 10): Number of results to return
 
-- **GET** `/api/cryptocurrencies`
-  - Returns all cryptocurrencies
-- **GET** `/api/cryptocurrencies/:symbol`
-  - Returns a specific cryptocurrency by symbol (e.g., BTC)
+### Get cryptocurrency data for a specific time period
 
-### Dashboard Data
+```
+GET /api/cryptocurrencies/time-period/:period
+```
 
-- **GET** `/api/trending`
-  - Returns cryptocurrencies sorted by 24h percent change
-- **GET** `/api/gainers`
-  - Returns cryptocurrencies with positive 24h percent change
-- **GET** `/api/time-period/:period`
-  - Returns cryptocurrencies sorted by the specified time period (5m, 1h, 6h, 24h)
+Path parameters:
 
-### Master API (with filtering, sorting, and pagination)
+- `period`: '5m', '1h', '6h', or '24h'
 
-- **GET** `/api/master`
-  - Parameters:
-    - `page`: Page number (default: 1)
-    - `limit`: Number of items per page (default: 10)
-    - `filter`: Filter type ('trending', 'gainers', '5m', '1h', '6h', '24h')
-    - `sortBy`: Sort field ('market_cap', 'price', 'volume_24h', 'percent_change')
-    - `sortPeriod`: Time period for percent change sorting ('5m', '1h', '6h', '24h')
-    - `sortDirection`: Sort direction ('asc', 'desc')
-    - `search`: Search term for filtering by name or symbol
+Query parameters:
 
-## Architecture Overview
+- `limit` (default: 100): Number of results to return
 
-### Data Flow
+### Master endpoint with all filters
 
-1. External API (CoinMarketCap) is called by the backend
-2. Data is processed and transformed
-3. RESTful endpoints expose the processed data for the frontend
+```
+GET /api/cryptocurrencies/master
+```
 
-### Error Handling
+Query parameters:
 
-- Centralized error handling middleware
-- Consistent error response format
-- Custom error classes for different error types
+- `page` (default: 1): Page number
+- `limit` (default: 10): Number of results per page
+- `filter` (default: all): Filter type, one of 'all', 'gainers', 'losers', 'trending'
+- `sortBy` (default: market_cap): Sort by field, one of 'market_cap', 'price', 'volume_24h', 'percent_change'
+- `sortPeriod` (default: 24h): Sort period, one of '1h', '24h', '7d', '30d'
+- `sortDirection` (default: desc): Sort direction, 'asc' or 'desc'
+- `search`: Search term for filtering by name or symbol
 
-### Validation
+Example:
 
-- Input validation for query parameters
-- Error handling for invalid requests
+```
+GET /api/cryptocurrencies/master?page=1&limit=10&filter=gainers&sortBy=market_cap&sortPeriod=24h&sortDirection=desc&search=bit
+```
 
-## Notes for Improvement
+### Health check
 
-- Add tests (unit, integration, and e2e)
-- Implement caching to reduce API calls to CoinMarketCap
-- Add rate limiting to protect the API
-- Implement logging for better debugging
-- Add authentication if required in the future
+```
+GET /health
+```
+
+## Project Structure
+
+```
+.
+├── config/
+│   └── envConfig.ts
+├── middleware/
+│   └── errorHandler.ts
+├── services/
+│   └── cryptocurrencies/
+│       ├── api/
+│       │   └── coinMarketCapApi.ts
+│       ├── controller/
+│       │   └── cryptocurrenciesController.ts
+│       └── route/
+│           └── cryptocurrenciesRoutes.ts
+├── types/
+│   └── cryptocurrency.ts
+├── index.ts
+├── package.json
+└── tsconfig.json
+```

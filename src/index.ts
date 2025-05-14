@@ -1,3 +1,4 @@
+// index.ts
 import express, { Express } from 'express';
 import cors from 'cors';
 import envConfig from './config/envConfig.js';
@@ -5,7 +6,6 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 // Import routes
 import cryptocurrenciesRoutes from './services/cryptocurrencies/route/cryptocurrenciesRoutes.js';
-import dashboardRoutes from './services/dashboard-general/route/dashboardRoutes.js';
 
 // Initialize Express app
 const app: Express = express();
@@ -22,7 +22,23 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/cryptocurrencies', cryptocurrenciesRoutes);
-app.use('/api', dashboardRoutes);
+
+// Additional routes based on your console.log statements
+app.use('/api/trending', (req, res) => {
+  res.redirect('/api/cryptocurrencies/trending');
+});
+
+app.use('/api/gainers', (req, res) => {
+  res.redirect('/api/cryptocurrencies/gainers');
+});
+
+app.use('/api/time-period/:period', (req, res) => {
+  res.redirect(`/api/cryptocurrencies/time-period/${req.params.period}`);
+});
+
+app.use('/api/master', (req, res) => {
+  res.redirect('/api/cryptocurrencies/master');
+});
 
 // Error handling middleware
 app.use(notFoundHandler);
@@ -33,12 +49,11 @@ app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log('Available endpoints:');
   console.log(`- http://localhost:${PORT}/api/cryptocurrencies (Get all cryptocurrency data)`);
-  console.log(`- http://localhost:${PORT}/api/cryptocurrencies/BTC (Get specific cryptocurrency by symbol)`);
-  console.log(`- http://localhost:${PORT}/api/trending (Get trending cryptocurrencies)`);
-  console.log(`- http://localhost:${PORT}/api/gainers (Get gainers)`);
-  console.log(`- http://localhost:${PORT}/api/time-period/5m (Get data for specific time period - 5m, 1h, 6h, 24h)`);
-  console.log(`- http://localhost:${PORT}/api/master (Master API with pagination and filtering)`);
-  console.log(`  Example: http://localhost:${PORT}/api/master?page=1&limit=10&filter=gainers&sortBy=market_cap&sortPeriod=24h&sortDirection=desc&search=bit`);
+  console.log(`- http://localhost:${PORT}/api/cryptocurrencies/trending (Get trending cryptocurrencies)`);
+  console.log(`- http://localhost:${PORT}/api/cryptocurrencies/gainers (Get gainers and losers)`);
+  console.log(`- http://localhost:${PORT}/api/cryptocurrencies/time-period/:period (Get data for specific time period - 5m, 1h, 6h, 24h)`);
+  console.log(`- http://localhost:${PORT}/api/cryptocurrencies/master (Master endpoint with all filters)`);
+  console.log(`  Example: http://localhost:${PORT}/api/cryptocurrencies/master?page=1&limit=10&filter=gainers&sortBy=market_cap&sortPeriod=24h&sortDirection=desc&search=bit`);
   console.log(`- http://localhost:${PORT}/health (Health check)`);
 });
 
