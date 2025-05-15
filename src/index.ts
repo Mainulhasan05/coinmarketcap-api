@@ -51,14 +51,14 @@ app.listen(PORT, () => {
   console.log(`- http://localhost:${PORT}/api/cryptocurrencies (Get all cryptocurrency data)`);
   console.log(`  Example with pagination: http://localhost:${PORT}/api/cryptocurrencies?page=1&limit=20`);
   console.log(`  Alternative pagination: http://localhost:${PORT}/api/cryptocurrencies?start=1&limit=20`);
-  console.log(`- http://localhost:${PORT}/api/cryptocurrencies/trending (Get trending cryptocurrencies)`);
-  console.log(`  Example with pagination: http://localhost:${PORT}/api/cryptocurrencies/trending?page=1&limit=20`);
-  console.log(`- http://localhost:${PORT}/api/cryptocurrencies/gainers (Get gainers and losers)`);
-  console.log(`  Example with pagination: http://localhost:${PORT}/api/cryptocurrencies/gainers?page=1&limit=20`);
+  console.log(`- http://localhost:${PORT}/api/trending (Get trending cryptocurrencies)`);
+  console.log(`  Example with pagination: http://localhost:${PORT}/api/trending?page=1&limit=20`);
+  console.log(`- http://localhost:${PORT}/api/gainers (Get gainers and losers)`);
+  console.log(`  Example with pagination: http://localhost:${PORT}/api/gainers?page=1&limit=20`);
   console.log(`- http://localhost:${PORT}/api/cryptocurrencies/time-period/:period (Get data for specific time period - 5m, 1h, 6h, 24h)`);
-  console.log(`  Example with pagination: http://localhost:${PORT}/api/cryptocurrencies/time-period/24h?page=1&limit=20`);
-  console.log(`- http://localhost:${PORT}/api/cryptocurrencies/master (Master endpoint with all filters)`);
-  console.log(`  Example: http://localhost:${PORT}/api/cryptocurrencies/master?page=1&limit=10&filter=gainers&sortBy=market_cap&sortPeriod=24h&sortDirection=desc&search=bit`);
+  console.log(`  Example with pagination: http://localhost:${PORT}/api/time-period/24h?page=1&limit=20`);
+  console.log(`- http://localhost:${PORT}/api/master (Master endpoint with all filters)`);
+  console.log(`  Example: http://localhost:${PORT}/api/master?page=1&limit=10&filter=gainers&sortBy=market_cap&sortPeriod=24h&sortDirection=desc&search=bit`);
   console.log(`- http://localhost:${PORT}/health (Health check)`);
 });
 
