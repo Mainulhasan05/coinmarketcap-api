@@ -15,7 +15,7 @@ const router = express.Router();
  * @desc Get all cryptocurrency data with optional filters
  * @access Public
  */
-router.get('/', getAllCryptocurrencies);
+router.get('/cryptocurrencies', getAllCryptocurrencies);
 
 /**
  * @route GET /api/cryptocurrencies/trending

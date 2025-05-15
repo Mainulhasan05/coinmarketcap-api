@@ -21,24 +21,24 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/cryptocurrencies', cryptocurrenciesRoutes);
+app.use('/api', cryptocurrenciesRoutes);
 
 // Additional routes based on your console.log statements
-app.use('/api/trending', (req, res) => {
-  res.redirect('/api/cryptocurrencies/trending');
-});
+// app.use('/api/trending', (req, res) => {
+//   res.redirect('/api/cryptocurrencies/trending');
+// });
 
-app.use('/api/gainers', (req, res) => {
-  res.redirect('/api/cryptocurrencies/gainers');
-});
+// app.use('/api/gainers', (req, res) => {
+//   res.redirect('/api/cryptocurrencies/gainers');
+// });
 
-app.use('/api/time-period/:period', (req, res) => {
-  res.redirect(`/api/cryptocurrencies/time-period/${req.params.period}`);
-});
+// app.use('/api/time-period/:period', (req, res) => {
+//   res.redirect(`/api/cryptocurrencies/time-period/${req.params.period}`);
+// });
 
-app.use('/api/master', (req, res) => {
-  res.redirect('/api/cryptocurrencies/master');
-});
+// app.use('/api/master', (req, res) => {
+//   res.redirect('/api/cryptocurrencies/master');
+// });
 
 // Error handling middleware
 app.use(notFoundHandler);
@@ -49,9 +49,14 @@ app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log('Available endpoints:');
   console.log(`- http://localhost:${PORT}/api/cryptocurrencies (Get all cryptocurrency data)`);
+  console.log(`  Example with pagination: http://localhost:${PORT}/api/cryptocurrencies?page=1&limit=20`);
+  console.log(`  Alternative pagination: http://localhost:${PORT}/api/cryptocurrencies?start=1&limit=20`);
   console.log(`- http://localhost:${PORT}/api/cryptocurrencies/trending (Get trending cryptocurrencies)`);
+  console.log(`  Example with pagination: http://localhost:${PORT}/api/cryptocurrencies/trending?page=1&limit=20`);
   console.log(`- http://localhost:${PORT}/api/cryptocurrencies/gainers (Get gainers and losers)`);
+  console.log(`  Example with pagination: http://localhost:${PORT}/api/cryptocurrencies/gainers?page=1&limit=20`);
   console.log(`- http://localhost:${PORT}/api/cryptocurrencies/time-period/:period (Get data for specific time period - 5m, 1h, 6h, 24h)`);
+  console.log(`  Example with pagination: http://localhost:${PORT}/api/cryptocurrencies/time-period/24h?page=1&limit=20`);
   console.log(`- http://localhost:${PORT}/api/cryptocurrencies/master (Master endpoint with all filters)`);
   console.log(`  Example: http://localhost:${PORT}/api/cryptocurrencies/master?page=1&limit=10&filter=gainers&sortBy=market_cap&sortPeriod=24h&sortDirection=desc&search=bit`);
   console.log(`- http://localhost:${PORT}/health (Health check)`);

@@ -27,6 +27,13 @@ export const getAllCryptocurrencies = async (req: Request, res: Response): Promi
       convert: req.query.convert as string || 'USD'
     };
 
+    // Handle page parameter if provided
+    if (req.query.page) {
+      const page = parseInt(req.query.page as string);
+      const limit = params.limit || 100;
+      params.start = (page - 1) * limit + 1;
+    }
+
     // Add optional filters if provided
     if (req.query.price_min) params.price_min = parseFloat(req.query.price_min as string);
     if (req.query.price_max) params.price_max = parseFloat(req.query.price_max as string);
@@ -57,6 +64,17 @@ export const getTrending = async (req: Request, res: Response): Promise<void> =>
   try {
     const params: TrendingParams = {};
     
+    // Handle pagination parameters
+    if (req.query.page) {
+      const page = parseInt(req.query.page as string);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+      params.start = (page - 1) * limit + 1;
+    } else if (req.query.start) {
+      params.start = parseInt(req.query.start as string);
+    } else {
+      params.start = 1;
+    }
+    
     if (req.query.limit) params.limit = parseInt(req.query.limit as string);
     if (req.query.convert) params.convert = req.query.convert as string;
     if (req.query.time_period) params.time_period = req.query.time_period as string;
@@ -79,6 +97,17 @@ export const getGainers = async (req: Request, res: Response): Promise<void> => 
   try {
     const params: GainersLosersParams = {};
     
+    // Handle pagination parameters
+    if (req.query.page) {
+      const page = parseInt(req.query.page as string);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+      params.start = (page - 1) * limit + 1;
+    } else if (req.query.start) {
+      params.start = parseInt(req.query.start as string);
+    } else {
+      params.start = 1;
+    }
+    
     if (req.query.limit) params.limit = parseInt(req.query.limit as string);
     if (req.query.convert) params.convert = req.query.convert as string;
     if (req.query.time_period) params.time_period = req.query.time_period as string;
@@ -100,9 +129,20 @@ export const getGainers = async (req: Request, res: Response): Promise<void> => 
 export const getByTimePeriod = async (req: Request, res: Response): Promise<void> => {
   try {
     const timePeriod = req.params.period as string;
+    
+    // Handle pagination parameters
+    let start = 1;
+    if (req.query.page) {
+      const page = parseInt(req.query.page as string);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+      start = (page - 1) * limit + 1;
+    } else if (req.query.start) {
+      start = parseInt(req.query.start as string);
+    }
+    
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
     
-    const data = await getCryptocurrencyByTimePeriod(timePeriod, limit);
+    const data = await getCryptocurrencyByTimePeriod(timePeriod, start, limit);
     res.status(200).json(data);
   } catch (error) {
     console.error('Error in getByTimePeriod controller:', error);
@@ -128,6 +168,13 @@ export const getMasterData = async (req: Request, res: Response): Promise<void> 
       search: req.query.search as string || '',
       convert: req.query.convert as string || 'USD'
     };
+    
+    // If start parameter is provided, calculate page based on start and limit
+    if (req.query.start) {
+      const start = parseInt(req.query.start as string);
+      const limit = queryParams.limit || 100;
+      queryParams.page = Math.floor((start - 1) / limit) + 1;
+    }
     
     const data = await getMasterCryptocurrencyData(
       queryParams.page,

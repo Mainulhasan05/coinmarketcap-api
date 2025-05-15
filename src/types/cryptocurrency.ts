@@ -106,6 +106,7 @@ export interface CryptocurrencyListingsParams {
 }
 
 export interface TrendingParams {
+  start?: number;
   limit?: number;
   convert?: string;
   convert_id?: string;
@@ -113,6 +114,7 @@ export interface TrendingParams {
 }
 
 export interface GainersLosersParams {
+  start?: number;
   limit?: number;
   convert?: string;
   convert_id?: string;
@@ -126,6 +128,7 @@ export interface TimePeriod {
 export interface MasterQueryParams {
   page?: number;
   limit?: number;
+  start?: number;
   filter?: 'all' | 'gainers' | 'losers' | 'trending';
   sortBy?: 'market_cap' | 'price' | 'volume_24h' | 'percent_change';
   sortPeriod?: '1h' | '24h' | '7d' | '30d';

@@ -42,6 +42,7 @@ export const getTrendingCryptocurrencies = async (
   try {
     // Set default values if not provided
     const apiParams = {
+      start: params.start || 1,
       limit: params.limit || 100,
       convert: params.convert || 'USD',
       time_period: params.time_period || '24h',
@@ -68,6 +69,7 @@ export const getGainersLosers = async (
   try {
     // Set default values if not provided
     const apiParams = {
+      start: params.start || 1,
       limit: params.limit || 100,
       convert: params.convert || 'USD',
       time_period: params.time_period || '24h',
@@ -87,7 +89,11 @@ export const getGainersLosers = async (
 /**
  * Get cryptocurrency data for a specific time period
  */
-export const getCryptocurrencyByTimePeriod = async (timePeriod: string, limit: number = 100): Promise<CryptocurrencyListingsResponse> => {
+export const getCryptocurrencyByTimePeriod = async (
+  timePeriod: string, 
+  start: number = 1,
+  limit: number = 100
+): Promise<CryptocurrencyListingsResponse> => {
   // Valid time periods are: 5m, 1h, 6h, 24h
   const validPeriods = ['5m', '1h', '6h', '24h'];
   if (!validPeriods.includes(timePeriod)) {
@@ -99,6 +105,7 @@ export const getCryptocurrencyByTimePeriod = async (timePeriod: string, limit: n
     const sortParam = `percent_change_${timePeriod}`;
     
     return await getCryptocurrencyListings({
+      start,
       limit,
       sort: sortParam,
       sort_dir: 'desc'
@@ -125,11 +132,15 @@ export const getMasterCryptocurrencyData = async (
   try {
     let result;
     
+    // Calculate start based on page and limit
+    const start = (page - 1) * limit + 1;
+    
     // Handle the filter parameter
     switch (filter) {
       case 'trending':
         // For trending, pass parameters as an object
         result = await getTrendingCryptocurrencies({
+          start,
           limit,
           convert,
           time_period: sortPeriod
@@ -138,6 +149,7 @@ export const getMasterCryptocurrencyData = async (
         
       case 'gainers':
         result = await getGainersLosers({
+          start,
           limit,
           convert,
           time_period: sortPeriod
@@ -146,6 +158,7 @@ export const getMasterCryptocurrencyData = async (
         
       case 'losers':
         result = await getGainersLosers({
+          start,
           limit,
           convert,
           time_period: sortPeriod
@@ -155,7 +168,6 @@ export const getMasterCryptocurrencyData = async (
       case 'all':
       default:
         // For regular listings with sorting and filtering
-        const start = (page - 1) * limit + 1;
         let sort = sortBy;
         
         // If sorting by percent change, include the period
